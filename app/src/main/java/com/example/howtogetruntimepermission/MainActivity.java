@@ -16,11 +16,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
     private Button mButton;
 
-    private int SotragePermissionCode=1;
+    private int SotragePermissionCode = 1;
 
 
     @Override
@@ -31,63 +34,59 @@ public class MainActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-             askStoragePermission();
 
+                getMultiplePermission();
             }
         });
     }
 
-    private void askStoragePermission() {
-        if (ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_EXTERNAL_STORAGE)
-        ==PackageManager.PERMISSION_GRANTED)
-        {
-            Toast.makeText(getApplicationContext(),"Permission is all ready Granted",Toast.LENGTH_SHORT).show();
+    private void getMultiplePermission() {
+        List<String> permissionList = new ArrayList<>();
+        int External_Read_Storage = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        int Camera_Permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA);
+        int Location_Permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int Bluetooth = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH);
+        if (External_Read_Storage == PackageManager.PERMISSION_DENIED) {
+            permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
-        else
-        {
-            requestStoragePermission();
+        if (Camera_Permission == PackageManager.PERMISSION_DENIED) {
+            permissionList.add(Manifest.permission.CAMERA);
         }
-    }
+        if (Location_Permission == PackageManager.PERMISSION_DENIED) {
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (Bluetooth == PackageManager.PERMISSION_DENIED) {
+            permissionList.add(Manifest.permission.BLUETOOTH);
+        }
+        if (permissionList.size() > 0) {
+            String[] permissionArray = new String[permissionList.size()];
 
-    private void requestStoragePermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this
-        ,Manifest.permission.READ_EXTERNAL_STORAGE))
-        {
-            new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("Permission Require")
-                    .setMessage("Purmission Require for This Purpose")
-                    .setPositiveButton("Granted", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},SotragePermissionCode);
+            for (int i = 0; i < permissionArray.length; i++) {
+                permissionArray[i] = permissionList.get(i);
+            }
+            ActivityCompat.requestPermissions(MainActivity.this, permissionArray, SotragePermissionCode);
 
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            }).create().show();
+        } else {
+            Toast.makeText(getApplicationContext(), " All permission Granted", Toast.LENGTH_SHORT).show();
+
         }
-        else
-        {
-            ActivityCompat.requestPermissions(MainActivity.this
-                    ,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},SotragePermissionCode);
-        }
+
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode==SotragePermissionCode)
         {
-            if (grantResults.length>= 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
+            for (int i=0 ; i<permissions.length;i++)
             {
-                Toast.makeText(getApplicationContext(),"Permission Granted",Toast.LENGTH_SHORT).show();
+                if (permissions.length > 0 && grantResults[i]==PackageManager.PERMISSION_GRANTED)
+                {
+                    Toast.makeText(getApplicationContext() , permissions[i]+"SuccessFully",Toast.LENGTH_SHORT).show();
+                }
             }
-            else
-            {
-                Toast.makeText(getApplicationContext(),"Permission not Granted",Toast.LENGTH_SHORT).show();
-            }
+
         }
     }
 
